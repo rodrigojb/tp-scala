@@ -20,11 +20,16 @@ class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligencia:Int
     return this  
   }
 
-  def intentarEquiparItem (unItem:Item, unSlot:Slot.Value):Heroe= {
-     
-
+  def intentarEquiparItem (unItem:Item):Heroe= {
+    unItem.equipar(this)
   }
   
+  
+  def equipaEnElSlot(unSlot: Slot.Value, unItem : Item):Heroe ={
+    inventario.get(unSlot).fold(unItem)(x=>unItem)
+    
+    return this      
+  }
   
  
   
