@@ -8,6 +8,8 @@ class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligencia:Int
  
   var inventario = new HashMap[Slot.Value, Option[Item]]
   
+  var trabajo:Option[Trabajo]=_
+  
   def modificarStat (funcion:(Int => Int), stat:Stat.Value): Heroe = {
     
     var statFinal = funcion(stats.get(stat).get)
@@ -26,8 +28,7 @@ class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligencia:Int
   
   
   def equipaEnElSlot(unSlot: Slot.Value, unItem : Item):Heroe ={
-    inventario.get(unSlot).fold(unItem)(x=>unItem)
-    
+    inventario.update(unSlot,Some(unItem))    
     return this      
   }
   
