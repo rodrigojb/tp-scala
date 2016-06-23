@@ -10,10 +10,10 @@ package object package_tp {
   
   object Slot extends Enumeration{
     type Slot = Value
-    val cabeza, torso, manoIzq, manoDer, talismanes = Value
+    val cabeza, torso, manos, talismanes = Value
   }
 
-  
+  /*
   object Guerrero extends Trabajo(Stat.fuerza,
       (unHeroe:Heroe) => new Heroe 
         (unHeroe.hp, unHeroe.fuerza, unHeroe.velocidad, unHeroe.inteligencia)
@@ -21,23 +21,13 @@ package object package_tp {
         .modificarStat(( x :Int)  =>  x +15, Stat.fuerza)
         .modificarStat(( x :Int)  =>  x -10, Stat.inteligencia)){}
       
-    
+ */
+  //val statPrincipal:Stat.Value, val hp:Int, val fuerza:Int, val velocidad:Int, val inteligencia:Int
   
-  
-  object Mago extends Trabajo(Stat.inteligencia,
-      (unHeroe:Heroe) => new Heroe
-      (unHeroe.hp, unHeroe.fuerza , unHeroe.velocidad, unHeroe.inteligencia)
-      .modificarStat((x:Int) => x -20, Stat.fuerza)
-      .modificarStat((x:Int) => x +20, Stat.inteligencia)){
-    
-  }
+  object Guerrero extends Trabajo(Stat.fuerza,new Stats(10,15,0,-10)){}
+        
+  object Mago extends Trabajo(Stat.inteligencia,new Stats(0,-20,0,20)){}
 
-  object Ladron extends Trabajo(Stat.velocidad,
-      (unHeroe:Heroe) => new Heroe
-      (unHeroe.hp, unHeroe.fuerza, unHeroe.velocidad, unHeroe.inteligencia)
-      .modificarStat((x:Int) => x - 5, Stat.hp)
-      .modificarStat((x:Int) => x + 10, Stat.velocidad)){
-    
-  }
+  object Ladron extends Trabajo(Stat.velocidad,new Stats(-5,0,10,0)){}
   
 }
