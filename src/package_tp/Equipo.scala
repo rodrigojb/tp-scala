@@ -43,6 +43,7 @@ case class Equipo (val nombreDeEquipo:String, val pozoComun:Int=0,val heroes: Se
   def elegirMision(criterio:criterioMejorMision,mision1:Mision,mision2:Mision):Mision={
     if(criterio(this.realizarMision(mision1),this.realizarMision(mision2))){mision1}
     else{mision2}
+    }
   
     def entrenar(misiones:List[Mision],criterio:criterioMejorMision):Equipo={
       misiones match{
@@ -51,7 +52,6 @@ case class Equipo (val nombreDeEquipo:String, val pozoComun:Int=0,val heroes: Se
         
       }
     }
- 
-  }
-  
 }
+  
+  
