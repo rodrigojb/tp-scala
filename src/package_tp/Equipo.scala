@@ -3,6 +3,8 @@ import scala.collection.immutable.Set
 import scala.collection.immutable.HashSet
 import scala.collection.immutable.Nil
 import scala.util.Try
+import scala.util.Failure
+import scala.util.Success
 
 case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes: Set[Heroe] = Set()) {
 
@@ -51,10 +53,18 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
   val equipoConMision1:Try[Equipo]=Try(this.realizarMision(mision1))
   val equipoConMision2:Try[Equipo]=Try(this.realizarMision(mision2))
   val tupla=(equipoConMision1,equipoConMision2)
-  if (criterio(this.realizarMision(mision1), this.realizarMision(mision2))) { mision1 }
+  tupla match{
+    case (Failure(_),Success(rdo))=>mision2
+    case (Success(rdo),Failure(_))=>mision1
+    case (Success(rdo1),Success(rdo2))=>
+      {
+  if (criterio(rdo1, rdo2)) { mision1 }
     else { mision2 }
   
-  
+      }
+    case(Failure(exception),Failure(_))=>throw exception
+    
+  }
   }
 
   def entrenar(misiones: List[Mision], criterio: criterioMejorMision): Equipo = {
