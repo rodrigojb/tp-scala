@@ -27,14 +27,14 @@ class Tests  {
   
   @Test
   def `equipar_un_heroe_con_casco_vikingo`= {
-    var heroeEquipado = unHeroe.Equipar(cascoVikingo)
+    var heroeEquipado = unHeroe.equipar(cascoVikingo)
     
     assertEquals(heroeEquipado.inventario.cabeza,Some(cascoVikingo))
     assertEquals(heroeEquipado.getStat(Stat.hp),unHeroe.getStat(Stat.hp)+10)
   }
   @Test val expected= classOf[NoEquipableException]
   def `equipar_un_heroe_pt_con_casco_vikingo_y_no_se_equipa_por_no_cumplir`= {
-     var heroeEquipado = heroePt.Equipar(cascoVikingo)   
+     var heroeEquipado = heroePt.equipar(cascoVikingo)   
   } 
   
 }
