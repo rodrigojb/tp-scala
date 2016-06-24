@@ -8,26 +8,17 @@ package object package_tp {
     val hp, fuerza, velocidad, inteligencia = Value    
   }  
   
-  object Slot extends Enumeration{
+  /*object Slot extends Enumeration{
     type Slot = Value
     val cabeza, torso, manos, talismanes = Value
   }
-
-  /*
+*/
   object Guerrero extends Trabajo(Stat.fuerza,
-      (unHeroe:Heroe) => new Heroe 
-        (unHeroe.hp, unHeroe.fuerza, unHeroe.velocidad, unHeroe.inteligencia)
-        .modificarStat(( x :Int)  =>  x +10, Stat.hp)
-        .modificarStat(( x :Int)  =>  x +15, Stat.fuerza)
-        .modificarStat(( x :Int)  =>  x -10, Stat.inteligencia)){}
-      
- */
-  //val statPrincipal:Stat.Value, val hp:Int, val fuerza:Int, val velocidad:Int, val inteligencia:Int
-  
-  object Guerrero extends Trabajo(Stat.fuerza,new Stats(10,15,0,-10)){}
-        
-  object Mago extends Trabajo(Stat.inteligencia,new Stats(0,-20,0,20)){}
+      ((unHeroe:Heroe) => unHeroe.copy(hp=unHeroe.hp+10, fuerza=unHeroe.fuerza+15,inteligencia=unHeroe.inteligencia-10) ))
 
-  object Ladron extends Trabajo(Stat.velocidad,new Stats(-5,0,10,0)){}
-  
+  object Mago extends Trabajo(Stat.inteligencia,
+      ((unHeroe:Heroe) => unHeroe.copy(fuerza=unHeroe.fuerza-20,inteligencia=unHeroe.inteligencia+20) ))
+
+  object Ladron extends Trabajo(Stat.velocidad,
+      ((unHeroe:Heroe) => unHeroe.copy(hp=unHeroe.hp-5,velocidad=unHeroe.velocidad+10) ))
 }

@@ -1,24 +1,24 @@
 package package_tp
 
-//Slot donde equipar, condicion de equipamiento, funcion de equipar
-class Item (val slot:Slot.Value, val puedeEquipar:(Heroe=>Boolean), val precio:Int,val stats:Stats, val getStat:((Heroe,Stat.Value,Int)=>Int)) {  
+//La funcion devuevle un heroe con los stats modificados por el item
+ class Item (val puedeEquipar:(Heroe=>Boolean), val precio:Int,val funcion :(Heroe=>Heroe)) {  
           
   
-  /*
-  def ocuparInventario(unHeroe:Heroe):Heroe=
-  {
-    unHeroe.equipaEnElSlot(slot, this)     
-  }
-  */
-  /*
-  def equipar(unHeroe: Heroe):Heroe={
-
-    if (puedeEquipar(unHeroe)){    
-        unHeroe.equipar(this)
-        //ocuparInventario(modificarStat(unHeroe))      
-    }else{
-      unHeroe
-    }
-  }*/
+  
   
 }
+case class ManoDoble(override val puedeEquipar:(Heroe=>Boolean),override val precio:Int,override val funcion :(Heroe=>Heroe)) extends Item (puedeEquipar,precio,funcion){
+  
+}
+case  class Casco(override val puedeEquipar:(Heroe=>Boolean),override val precio:Int,override  val funcion :(Heroe=>Heroe)) extends Item (puedeEquipar,precio,funcion){
+  
+}
+case  class Pecho( override val puedeEquipar:(Heroe=>Boolean), override  val precio:Int,override  val funcion :(Heroe=>Heroe)) extends Item (puedeEquipar,precio,funcion){
+  
+}
+case  class UnaMano( override val puedeEquipar:(Heroe=>Boolean), override  val precio:Int, override val funcion :(Heroe=>Heroe)) extends Item (puedeEquipar,precio,funcion){
+  
+}   
+case  class Talisman( override val puedeEquipar:(Heroe=>Boolean), override val precio:Int, override val funcion :(Heroe=>Heroe)) extends Item (puedeEquipar,precio,funcion){
+  
+}   

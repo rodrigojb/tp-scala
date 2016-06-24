@@ -3,51 +3,46 @@ import scala.collection.mutable.Set
 import scala.collection.mutable.HashSet
 
 
-class Equipo (val nombreDeEquipo:String) {
+case class Equipo (val nombreDeEquipo:String, val pozoComun:Int=0,val heroes: Set[Heroe]=Set()) {
  
-  var pozoComun: Int = 0
-  var listaDeHeroes: Set[Option[Heroe]] = new HashSet[Option[Heroe]]  
-    
+
   def mejorHeroeSegun(criterio:(Heroe=>Int)):Option[Heroe]={
-    listaDeHeroes.fold(None)((x:Option[Heroe],y:Option[Heroe])=> 
-      if(x.fold(0)((x:Heroe)=>criterio(x))>y.fold(0)((y:Heroe)=>criterio(y))){ x}
-      else{ y})
+    val mejor=heroes.maxBy { x => criterio(x) }
+    if(mejor==null){None}
+    else{Some(mejor)}
   }
   
-  def lider(){
-    mejorHeroeSegun((x:Heroe)=>x.stats.get(x.trabajo.get.statPrincipal).get)
-  }
-      def expulsarMiembro(unHeroe:Option[Heroe]){
-        listaDeHeroes.-=(unHeroe)
+  def lider():Option[Heroe]=mejorHeroeSegun((heroe:Heroe)=>heroe.mainStat())
+  
+      def expulsarMiembro(unHeroe:Heroe):Equipo=this.copy(heroes=heroes.-(unHeroe))       
+ 
+       def obtenerMiembro(unHeroe:Heroe):Equipo=this.copy(heroes=heroes.+(unHeroe))  
+      
        
-      }
-       def obtenerMiembro(unHeroe:Option[Heroe]){
-        listaDeHeroes.+=(unHeroe)
-      }
-       
-      def reemplazarMiembro(unHeroe:Option[Heroe],reemplazo:Option[Heroe]){
-          expulsarMiembro(unHeroe)
-          obtenerMiembro(reemplazo)
-      }
+    def reemplazarMiembro(unHeroe:Heroe,reemplazo:Heroe):Equipo=this.expulsarMiembro(unHeroe).obtenerMiembro(reemplazo)
+      
       def obtenerUnItem(unItem:Item):Equipo={
         
-        val diferencia=((_unHeroe:Heroe,otroHeroe:Heroe,stat:Stat.Value)=>
-          _unHeroe.stats.get(stat).get-otroHeroe.stats.get(stat).get
-        )
-        
-        val mejorHeroe=mejorHeroeSegun((unHeroe:Heroe)=>
-             diferencia(unHeroe.trabajo.get.aplicarTrabajo(unHeroe),unHeroe,
-                unHeroe.trabajo.get.statPrincipal)
-      )
-        val equipo=new Equipo(nombreDeEquipo)
-          
-      if(mejorHeroe.get.stats.get(mejorHeroe.get.trabajo.get.statPrincipal).get<0){
-          equipo.reemplazarMiembro(mejorHeroe, Some(mejorHeroe.get.intentarEquiparItem(unItem)))
-          equipo
+        val seLoLleva=mejorHeroeSegun { heroe => heroe.Equipar(unItem).mainStat() }
+        if(seLoLleva.isEmpty){this.reemplazarMiembro(seLoLleva.get, seLoLleva.get.Equipar(unItem))}
+        else{this.copy(pozoComun=pozoComun+unItem.precio)}
+   
       }
-      else{equipo.pozoComun=equipo.pozoComun+unItem.precio
-        equipo}
-      }
-      
+  def realizarTarea(unaTarea:Tarea):Equipo={
+    val mejor=mejorHeroeSegun((heroe:Heroe)=>unaTarea.facilidad(heroe,this))
+    if(mejor.isEmpty){throw new TareaFallidaException(unaTarea,this) }
+    else {this.reemplazarMiembro(mejor.get,unaTarea.efecto(mejor.get))}
+  }
+  def realizarMision(unaMision:Mision):Equipo={
+    val equipoFinal=unaMision.tareas.foldLeft(this)((unEquipo:Equipo,unaTarea:Tarea)=>unEquipo.realizarTarea(unaTarea))
+    unaMision.recompensa(equipoFinal)
+  }
+  
+  def elegirMision(criterio:(Equipo,Equipo)=>Boolean,mision1:Mision,mision2:Mision)={
+    if(criterio(this.realizarMision(mision1),this.realizarMision(mision2))){mision1}
+    else{mision2}
+  
+ 
+  }
   
 }
