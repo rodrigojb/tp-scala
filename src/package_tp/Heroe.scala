@@ -13,14 +13,19 @@ case class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligenci
     case casco:Casco=>this.copy(inventario=inventario.copy( cabeza=Some(casco)))
     case pecho:Pecho=>this.copy(inventario=inventario.copy( torso=Some(pecho)))
     case manoDoble:ManoDoble=>this.copy(inventario=inventario.copy( manoIzq=Some(manoDoble),manoDer=Some(manoDoble)))
-    case unaMano:UnaMano=>this.copy(inventario=if (inventario.manoIzq.isEmpty){inventario.copy(manoIzq=Some(unaMano))}
-                                              else{inventario.copy(manoDer=Some(unaMano))})
+    case unaMano:UnaMano=>equiparEnManoPro(unaMano)
     case talisman:Talisman=>this.copy(inventario=inventario.copy(talismanes=inventario.talismanes.+:(Some(talisman)))) 
         }
         }
       else{throw new NoEquipableException("El item no se puede equipar")}
   }
   
+  def equiparEnManoPro(unItem:Item):Heroe={
+    val equipadoEnDer=this.copy(inventario=inventario.copy(manoDer=Some(unItem)))
+    val equipadoEnIzq=this.copy(inventario=inventario.copy(manoIzq=Some(unItem)))
+    if(equipadoEnDer.mainStat>equipadoEnIzq.mainStat){ equipadoEnDer}
+    else{equipadoEnIzq}
+  }
  def Trabajar(unTrabajo:Trabajo):Heroe= this.copy(trabajo=Some(unTrabajo))
  
   

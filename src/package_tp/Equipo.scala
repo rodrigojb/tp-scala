@@ -1,6 +1,7 @@
 package package_tp
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashSet
+import scala.collection.immutable.Nil
 
 
 case class Equipo (val nombreDeEquipo:String, val pozoComun:Int=0,val heroes: Set[Heroe]=Set()) {
@@ -38,10 +39,18 @@ case class Equipo (val nombreDeEquipo:String, val pozoComun:Int=0,val heroes: Se
     unaMision.recompensa(equipoFinal)
   }
   
-  def elegirMision(criterio:(Equipo,Equipo)=>Boolean,mision1:Mision,mision2:Mision)={
+  type criterioMejorMision=(Equipo,Equipo)=>Boolean
+  def elegirMision(criterio:criterioMejorMision,mision1:Mision,mision2:Mision):Mision={
     if(criterio(this.realizarMision(mision1),this.realizarMision(mision2))){mision1}
     else{mision2}
   
+    def entrenar(misiones:List[Mision],criterio:criterioMejorMision):Equipo={
+      misiones match{
+        case x::xs::Nil=> this.realizarMision(misiones.fold(x)((mis1,mis2)=>elegirMision(criterio,mis1,mis2)))
+          case x::Nil=> this.realizarMision(x)
+        
+      }
+    }
  
   }
   
