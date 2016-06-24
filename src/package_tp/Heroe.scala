@@ -6,7 +6,7 @@ case class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligenci
   val stats :scala.collection.immutable.HashMap[Stat.Value,Int]= HashMap((Stat.hp,hp),(Stat.fuerza,fuerza),(Stat.inteligencia,inteligencia),
       (Stat.velocidad,velocidad))
 
-      type Casco=Item
+     
   def Equipar(unItem:Item):Heroe= {
       if(unItem.puedeEquipar(this)){
         unItem match{
@@ -16,8 +16,8 @@ case class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligenci
     case unaMano:UnaMano=>equiparEnManoPro(unaMano)
     case talisman:Talisman=>this.copy(inventario=inventario.copy(talismanes=inventario.talismanes.+:(Some(talisman)))) 
         }
-        }
-      else{throw new NoEquipableException("El item no se puede equipar")}
+      }
+      else{throw new NoEquipableException(unItem)}
   }
   
   def equiparEnManoPro(unItem:Item):Heroe={
@@ -34,7 +34,7 @@ case class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligenci
   def getStat(stat:Stat.Value):Int = {
     val equipado=inventario.aplicate(this)
     val estadoFinal=trabajo.fold(equipado)(trabajo=>trabajo.funcion(equipado))
-    val statResultante=estadoFinal.getStat(stat)
+    val statResultante=estadoFinal.stats.get(stat).get
  if(statResultante<1) {1}
  else{statResultante}
  }

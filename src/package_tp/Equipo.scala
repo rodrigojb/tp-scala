@@ -47,7 +47,8 @@ case class Equipo (val nombreDeEquipo:String, val pozoComun:Int=0,val heroes: Se
   
     def entrenar(misiones:List[Mision],criterio:criterioMejorMision):Equipo={
       misiones match{
-        case x::xs::Nil=> this.realizarMision(misiones.fold(x)((mis1,mis2)=>elegirMision(criterio,mis1,mis2)))
+        case x::xs=> this.realizarMision(misiones.fold(x)((mis1,mis2)=>elegirMision(criterio,mis1,mis2))).
+        entrenar(xs,criterio)
           case x::Nil=> this.realizarMision(x)
         
       }

@@ -3,6 +3,7 @@ package package_tp
 import org.junit.Test
 import org.junit.Before
 import org.junit.Assert._
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.Intercepter
 
 class Tests  {
   
@@ -32,8 +33,8 @@ class Tests  {
     assertEquals(heroeEquipado.getStat(Stat.hp),unHeroe.getStat(Stat.hp)+10)
   }
   @Test val expected= classOf[NoEquipableException]
-  def equipar_un_heroe_pt_con_casco_vikingo_y_no_se_equipa_por_no_cumplir {
-    var heroeEquipado = heroePt.Equipar(cascoVikingo)   
+  def `equipar_un_heroe_pt_con_casco_vikingo_y_no_se_equipa_por_no_cumplir`= {
+     var heroeEquipado = heroePt.Equipar(cascoVikingo)   
   } 
   
 }
