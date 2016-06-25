@@ -10,7 +10,13 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
 
   def mejorHeroeSegun(criterio: (Heroe => Int)): Option[Heroe] = {
 
-    val mejor = heroes.maxBy { heroe => criterio(heroe) }
+    val mejor = heroes.maxBy { heroe => 
+      val tryHeroe = Try(criterio(heroe))
+      tryHeroe match{
+        case Failure(_) => 0
+        case Success(resultado) => resultado
+      }
+      }
     if (mejor == null) { None }
     else { Some(mejor) }
   }
@@ -48,18 +54,10 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
 
   type criterioMejorMision = (Equipo, Equipo) => Boolean
   def elegirMision(criterio: criterioMejorMision, mision1: Mision, mision2: Mision): Mision = {
-    val equipoConMision1: Try[Equipo] = Try(this.realizarMision(mision1))
-    val equipoConMision2: Try[Equipo] = Try(this.realizarMision(mision2))
-    val tupla = (equipoConMision1, equipoConMision2)
-    tupla match {
-      case (Failure(_), Success(rdo)) => mision2
-      case (Success(rdo), Failure(_)) => mision1
-      case (Success(rdo1), Success(rdo2)) =>
-        {
-          if (criterio(rdo1, rdo2)) { mision1 }
-          else { mision2 }
-        }
-      case (Failure(exception), Failure(_)) => throw exception
+    if(mejorMision(criterio, mision1, mision2)){
+      mision1
+    }else{
+      mision2
     }
   }
 
