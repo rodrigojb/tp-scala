@@ -29,7 +29,6 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
 
     if (seLoLleva.isEmpty || (seLoLleva.get.equipar(unItem).getMainStatValue() - seLoLleva.get.getMainStatValue()) == 0) { this.copy(pozoComun = pozoComun + unItem.precio) }
     else { this.reemplazarMiembro(seLoLleva.get, seLoLleva.get.equipar(unItem)) }
-
   }
 
   def realizarTarea(unaTarea: Tarea): Equipo = {
@@ -89,12 +88,12 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
       case x :: Nil => this.realizarMision(x)
       case _        => this
     }
-  }*/ 
-  
+  }*/
+
   def entrenar(misiones: List[Mision], criterio: criterioMejorMision): Equipo = {
-   misiones.sortWith((mision1:Mision,mision2:Mision)=>mejorMision(criterio,mision1,mision2)).
-   foldLeft(this)((equipo:Equipo,mision:Mision)=>equipo.realizarMision(mision))
+    misiones.sortWith((mision1: Mision, mision2: Mision) => mejorMision(criterio, mision1, mision2)).
+      foldLeft(this)((equipo: Equipo, mision: Mision) => equipo.realizarMision(mision))
   }
- 
+
 }  
   

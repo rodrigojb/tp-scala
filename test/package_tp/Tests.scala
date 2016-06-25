@@ -18,16 +18,18 @@ class Tests {
   var setEquipo: Set[Heroe] = _
   var unItem: Item = _
   var unInventario: Inventario = _
+  //var subirEscalon: ((Heroe, Equipo) => Int)
+
   var subirEscalera: Tarea = _
   var vencerDragon: Tarea = _
   var rescatarPrincesa: Mision = _
-  var tareas : List[Tarea] = _
-  var unTablon : Tablon = _
-  var misiones : List[Mision] = _
+  var tareas: List[Tarea] = _
+  var unTablon: Tablon = _
+  var misiones: List[Mision] = _
 
   var escudoAntiRobo: Item = _
   var talismanMaldito: Item = _
-  
+
   @Before
   def setup() {
 
@@ -41,7 +43,7 @@ class Tests {
     unMago = new Heroe(5, 4, 3, 2, Some(Mago))
     unLadron = new Heroe(1, 1, 1, 3, Some(Ladron))
 
-    setEquipo=Set(unLadron,unMago,unGuerrero)
+    setEquipo = Set(unLadron, unMago, unGuerrero)
 
     unEquipo = new Equipo("losSuperAmigos", 120, setEquipo)
 
@@ -56,57 +58,44 @@ class Tests {
 
     unInventario = new Inventario
 
-    def matarDragon(unHeroe: Heroe, unEquipo: Equipo): Int = {
-      if (unHeroe.fuerza > 80) {
-        return 10
-      }
-      
-      return 0
-    }
+    val matarDragon = ((unHeroe: Heroe, unEquipo: Equipo) => if (unHeroe.fuerza > 0) {10} else{0})
     
-    def subirEscalon(unHeroe: Heroe, unEquipo: Equipo): Int = {
-      if (unHeroe.hp > 100) {
-        return 5
-      }
-      
-      return 2
-    }   
-    
-    def efectoDragon(unHeroe:Heroe):Heroe = {
+    val subirEscalon = ((x:Heroe, y:Equipo) => if (x.hp > 0) { 5 } else { 2 })
+
+    def efectoDragon(unHeroe: Heroe): Heroe = {
       unHeroe.inteligencia.+(100)
       return unHeroe
     }
-    
-    def efectoEscalera(unHeroe:Heroe):Heroe = {
+
+    def efectoEscalera(unHeroe: Heroe): Heroe = {
       unHeroe.hp.-(20)
       return unHeroe
     }
-    
-    def puedeVencerDragon(unEquipo:Equipo):Boolean = true
-    def puedeSubirEscalera(unEquipo:Equipo):Boolean = true
-    
+
+    def puedeVencerDragon(unEquipo: Equipo): Boolean = true
+    def puedeSubirEscalera(unEquipo: Equipo): Boolean = true
+
     vencerDragon = new Tarea(matarDragon, efectoDragon, puedeVencerDragon)
     subirEscalera = new Tarea(subirEscalon, efectoEscalera, puedeSubirEscalera)
-    
-    def recompensa(unEquipo:Equipo):Equipo = {
-      unEquipo.pozoComun.+(2000)
-      return unEquipo
+
+    def recompensa(unEquipo: Equipo): Equipo = {
+      var equipo = unEquipo.copy(pozoComun = unEquipo.pozoComun.+(2000))
+      return equipo
     }
-    
-    tareas = vencerDragon :: subirEscalera :: Nil   
-    rescatarPrincesa = new Mision(tareas,recompensa)
-    
-    misiones = rescatarPrincesa :: Nil       
+
+    tareas = vencerDragon :: subirEscalera :: Nil
+    rescatarPrincesa = new Mision(tareas, recompensa)
+
+    misiones = rescatarPrincesa :: Nil
     unTablon = new Tablon(misiones)
-    
+
     
     //puedeEquipar:(Heroe=>Boolean), override  val precio:Int, override val efectoSobreHeroe :(Heroe=>Heroe)) extends Item (puedeEquipar,precio,efectoSobreHeroe){
-    val funcionAntiRobo = (x:Heroe) => {x.trabajo.get!=Ladron}
-    escudoAntiRobo = new UnaMano( funcionAntiRobo,5, ((x: Heroe) => x.copy(hp = x.hp + 20)))
-    
+    val funcionAntiRobo = (x: Heroe) => { x.trabajo.get != Ladron }
+    escudoAntiRobo = new UnaMano(funcionAntiRobo, 5, ((x: Heroe) => x.copy(hp = x.hp + 20)))
+
   }
 
-  
   @Test
   def `puede_equipar_un_heroe_casco_vikingo` = {
     assertTrue(cascoVikingo.puedeEquipar(unHeroe))
@@ -124,22 +113,28 @@ class Tests {
   def `equipar_un_heroe_pt_con_casco_vikingo_y_no_se_equipa_por_no_cumplir` = {
     var heroeEquipado = heroePt.equipar(cascoVikingo)
   }
-  
+
   @Test
   def `liderDeEquipo` = {
-    assertEquals(unEquipo.lider(),Some(unMago))
+    assertEquals(unEquipo.lider(), Some(unMago))
+  }
+
+  @Test
+  def `noLiderDeEquipo` = {
+    assertNotEquals(unEquipo.lider(), Some(unGuerrero))
+  }
+
+  @Test(expected = classOf[NoEquipableException])
+  def `escudo_antirobo_no_puede_ser_equipado_por_ladron` = {
+    var heroeEquipado = unLadron.equipar(escudoAntiRobo)
   }
   
   @Test
-  def `noLiderDeEquipo` = {
-    assertNotEquals(unEquipo.lider(),Some(unGuerrero))
-  }
-
-
-  
-  @Test(expected = classOf[NoEquipableException])
-  def `escudo_antirobo_no_puede_ser_equipado_por_ladron` = {
-    var heroeEquipado = unLadron.equipar(escudoAntiRobo)    
+  def `hacer Mision` = {    
+    var pozoAnterior = unEquipo.pozoComun
+    var equipo = unEquipo.realizarMision(rescatarPrincesa)
+    var pozoFinal = equipo.pozoComun
+    assertEquals(pozoFinal,pozoAnterior.+(2000)) 
   }
 
 }
