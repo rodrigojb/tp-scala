@@ -129,12 +129,17 @@ class Tests {
   def `liderDeEquipo` = {
     assertEquals(unEquipo.lider(),Some(unMago))
   }
-
   
   @Test
+  def `noLiderDeEquipo` = {
+    assertNotEquals(unEquipo.lider(),Some(unGuerrero))
+  }
+
+
+  
+  @Test(expected = classOf[NoEquipableException])
   def `escudo_antirobo_no_puede_ser_equipado_por_ladron` = {
-    
-    assertEquals(unLadron,unLadron.equipar(escudoAntiRobo))
+    var heroeEquipado = unLadron.equipar(escudoAntiRobo)    
   }
 
 }
