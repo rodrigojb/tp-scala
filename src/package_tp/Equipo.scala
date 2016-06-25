@@ -37,6 +37,7 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
     else { this.reemplazarMiembro(seLoLleva.get, seLoLleva.get.equipar(unItem)) }
   }
 
+  //crear una nueva estructura para manejar el resultado de una tarea
   def realizarTarea(unaTarea: Tarea): Equipo = {
     if (unaTarea.puedeSerRealizadaPorEquipo(this)) {
       val mejor = mejorHeroeSegun((heroe: Heroe) => unaTarea.facilidad(heroe, this))
@@ -64,7 +65,6 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
   def mejorMision(criterio: criterioMejorMision, mision1: Mision, mision2: Mision): Boolean = {
 
     var rdo1, rdo2 = this
-
     try {
       rdo1 = this.realizarMision(mision1)
     } catch {
@@ -88,6 +88,7 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
     }
   }*/
 
+  //EN cada paso puede cambiar la mejor mision siguiente
   def entrenar(misiones: List[Mision], criterio: criterioMejorMision): Equipo = {
     misiones.sortWith((mision1: Mision, mision2: Mision) => mejorMision(criterio, mision1, mision2)).
       foldLeft(this)((equipo: Equipo, mision: Mision) => equipo.realizarMision(mision))

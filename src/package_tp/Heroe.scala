@@ -6,7 +6,7 @@ case class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligenci
   lazy val stats :scala.collection.immutable.HashMap[Stat.Value,Int]= HashMap((Stat.hp,hp),(Stat.fuerza,fuerza),(Stat.inteligencia,inteligencia),
       (Stat.velocidad,velocidad))
 
-     
+     //devolver un Option
   def equipar(unItem:Item):Heroe= {
       if(unItem.puedeEquipar(this)){
         unItem match{
@@ -46,6 +46,7 @@ case class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligenci
  def getMainStatValue():Int={
    if(trabajo.isEmpty){0}
    else{this.getStat(trabajo.get.statPrincipal)}
+   //usar un fold
  }
  
 } 
