@@ -25,6 +25,8 @@ class Tests {
   var unTablon : Tablon = _
   var misiones : List[Mision] = _
 
+  var escudoAntiRobo: Item = _
+  var talismanMaldito: Item = _
   
   @Before
   def setup() {
@@ -96,6 +98,12 @@ class Tests {
     
     misiones = rescatarPrincesa :: Nil       
     unTablon = new Tablon(misiones)
+    
+    
+    //puedeEquipar:(Heroe=>Boolean), override  val precio:Int, override val efectoSobreHeroe :(Heroe=>Heroe)) extends Item (puedeEquipar,precio,efectoSobreHeroe){
+    val funcionAntiRobo = (x:Heroe) => {x.trabajo.get!=Ladron}
+    escudoAntiRobo = new UnaMano( funcionAntiRobo,5, ((x: Heroe) => x.copy(hp = x.hp + 20)))
+    
   }
 
   
@@ -122,5 +130,11 @@ class Tests {
     assertEquals(unEquipo.lider(),Some(unMago))
   }
 
+  
+  @Test
+  def `escudo_antirobo_no_puede_ser_equipado_por_ladron` = {
+    
+    assertEquals(unLadron,unLadron.equipar(escudoAntiRobo))
+  }
 
 }
