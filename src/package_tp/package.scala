@@ -12,7 +12,8 @@ package object package_tp {
     type Slot = Value
     val cabeza, torso, manos, talismanes = Value
   }
-*/
+	*/
+  
   object Guerrero extends Trabajo(Stat.fuerza,
       ((unHeroe:Heroe) => unHeroe.copy(hp=unHeroe.hp+10, fuerza=unHeroe.fuerza+15,inteligencia=unHeroe.inteligencia-10) ))
 
