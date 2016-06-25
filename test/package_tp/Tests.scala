@@ -39,7 +39,7 @@ class Tests {
     unMago = new Heroe(5, 4, 3, 2, Some(Mago))
     unLadron = new Heroe(1, 1, 1, 3, Some(Ladron))
 
-    setEquipo.+(unGuerrero).+(unMago).+(unLadron)
+    setEquipo=Set(unLadron,unMago,unGuerrero)
 
     unEquipo = new Equipo("losSuperAmigos", 120, setEquipo)
 
