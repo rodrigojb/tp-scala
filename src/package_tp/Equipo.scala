@@ -84,13 +84,7 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
   //devuelve un resultado (cuando falla burbujea, manteniendo el mismo resultado con el equipo y la 
   //mision en la que fallo)
   def entrenar(misiones: List[Mision], criterio: criterioMejorMision): RdoDeRealizarTarea = {
-    misiones match{
-      case x::xs::nil=> {val mision=misiones.sortWith(mejorMision(criterio)).head
-        this.realizarMision(mision).equipo.entrenar(misiones.dropWhile { x => x==mision }, criterio)
-      
-      }
-      case x::nil=>this.realizarMision(x)
-      }
+    RdoDeRealizarTarea(this,None).entrenar(misiones, criterio)
     }
   
 }
