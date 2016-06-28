@@ -1,6 +1,6 @@
 package package_tp
 
-class Tarea(val facilidad:((Heroe,Equipo)=>Int),val efecto:(Heroe=>Heroe),val puedeSerRealizadaPorEquipo:(Equipo=>Boolean)) {
+class Tarea(val facilidad:((Equipo)=>Option[(Heroe)=>Int]),val efecto:(Heroe=>Heroe)) {
   
   
 }

@@ -6,18 +6,19 @@ case class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligenci
   lazy val stats :scala.collection.immutable.HashMap[Stat.Value,Int]= HashMap((Stat.hp,hp),(Stat.fuerza,fuerza),(Stat.inteligencia,inteligencia),
       (Stat.velocidad,velocidad))
 
-     //devolver un Option
-  def equipar(unItem:Item):Heroe= {
+     //devolver un Option (Y)
+  def equipar(unItem:Item):Option[Heroe]= {
       if(unItem.puedeEquipar(this)){
         unItem match{
-    case casco:Casco=>this.copy(inventario=inventario.copy( cabeza=Some(casco)))
-    case pecho:Pecho=>this.copy(inventario=inventario.copy( torso=Some(pecho)))
-    case manoDoble:ManoDoble=>this.copy(inventario=inventario.copy( manoIzq=Some(manoDoble),manoDer=None))
-    case unaMano:UnaMano=>equiparEnManoPro(unaMano)
-    case talisman:Talisman=>this.copy(inventario=inventario.copy(talismanes=inventario.talismanes.+:(Some(talisman)))) 
+    case casco:Casco=>Some(this.copy(inventario=inventario.copy( cabeza=Some(casco))))
+    case pecho:Pecho=>Some(this.copy(inventario=inventario.copy( torso=Some(pecho))))
+    case manoDoble:ManoDoble=>Some(this.copy(inventario=inventario.copy( manoIzq=Some(manoDoble),manoDer=None)))
+    case unaMano:UnaMano=>Some(equiparEnManoPro(unaMano))
+    case talisman:Talisman=>Some(this.copy(inventario=inventario.copy(talismanes=inventario.talismanes.+:(Some(talisman)))))
         }
       }
-      else{throw new NoEquipableException(unItem)}
+      else{Some(this
+          )}
   }
   
   def equiparEnManoPro(unItem:Item):Heroe={
@@ -44,9 +45,9 @@ case class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligenci
    statResultante.max(1)
  }
  def getMainStatValue():Int={
-   if(trabajo.isEmpty){0}
-   else{this.getStat(trabajo.get.statPrincipal)}
-   //usar un fold
+   
+   trabajo.fold(0)(trabajo=>this.getStat(trabajo.statPrincipal))
+   //usar un fold (Y)
  }
  
 } 

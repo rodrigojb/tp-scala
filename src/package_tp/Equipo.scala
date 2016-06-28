@@ -8,14 +8,11 @@ import scala.util.Success
 
 case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes: Set[Heroe] = Set()) {
 
+  //mejorHeroeSegun ya no contempla heroes que dan error al aplicar el criterio
   def mejorHeroeSegun(criterio: (Heroe => Int)): Option[Heroe] = {
 
-    val mejor = heroes.maxBy { heroe => 
-      val tryHeroe = Try(criterio(heroe))
-      tryHeroe match{
-        case Failure(_) => 0
-        case Success(resultado) => resultado
-      }
+    val mejor = heroes.filter { heroe => Try(criterio(heroe)).isSuccess}.maxBy { heroe => 
+      criterio(heroe)
       }
     if (mejor == null) { None }
     else { Some(mejor) }
@@ -31,68 +28,69 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
 
   def obtenerUnItem(unItem: Item): Equipo = {
 
-    val seLoLleva = mejorHeroeSegun { heroe => heroe.equipar(unItem).getMainStatValue - heroe.getMainStatValue }
+    val seLoLleva = mejorHeroeSegun { heroe => heroe.equipar(unItem).get.getMainStatValue-heroe.getMainStatValue }
 
-    if (seLoLleva.isEmpty || (seLoLleva.get.equipar(unItem).getMainStatValue() - seLoLleva.get.getMainStatValue()) == 0) { this.copy(pozoComun = pozoComun + unItem.precio) }
-    else { this.reemplazarMiembro(seLoLleva.get, seLoLleva.get.equipar(unItem)) }
+    seLoLleva.fold(this.copy(pozoComun = pozoComun + unItem.precio))(heroe=>
+      if((heroe.equipar(unItem).get.getMainStatValue-heroe.getMainStatValue)<0){
+        this.copy(pozoComun = pozoComun + unItem.precio)
+      }
+      else{
+        this.reemplazarMiembro(seLoLleva.get, seLoLleva.get.equipar(unItem).get)
+      }
+   )
+    
   }
-
   //crear una nueva estructura para manejar el resultado de una tarea
-  def realizarTarea(unaTarea: Tarea): Equipo = {
-    if (unaTarea.puedeSerRealizadaPorEquipo(this)) {
-      val mejor = mejorHeroeSegun((heroe: Heroe) => unaTarea.facilidad(heroe, this))
-      if (mejor.isEmpty) { throw new TareaFallidaException(unaTarea, this) }
-      else { this.reemplazarMiembro(mejor.get, unaTarea.efecto(mejor.get)) }
-    } else {
-      throw new TareaFallidaException(unaTarea, this)
-    }
+  //Se devuelve un rdo: si la tarea salio bien (con el equipo final y un None en tarea fallida)
+  //Si la tarea salio mal (el estado inicial y un Some con la tarea en la que fallo)
+  def realizarTarea(unaTarea: Tarea): RdoDeRealizarTarea = {
+      val mejor = mejorHeroeSegun((heroe: Heroe) => unaTarea.facilidad(this).get(heroe))
+      mejor.fold(RdoDeRealizarTarea(this,Some(unaTarea)))(mejor=>RdoDeRealizarTarea(this.
+          reemplazarMiembro(mejor, unaTarea.efecto(mejor)),None))
   }
 
-  def realizarMision(unaMision: Mision): Equipo = {
-    val equipoFinal = unaMision.tareas.foldLeft(this)((unEquipo: Equipo, unaTarea: Tarea) => unEquipo.realizarTarea(unaTarea))
-    unaMision.recompensa(equipoFinal)
+  //Hace un fold de todas las tareas. Si el rdo final del fold es un rdo fallido devuelve ese rdo
+  //Si el rdo final es un rdo que salio bien devuelve un rdo con el equipo (despues de la recompensa)
+  //y un None en tarea fallida
+  def realizarMision(unaMision: Mision): RdoDeRealizarTarea = {
+   val equipoFinal=unaMision.tareas.foldLeft(RdoDeRealizarTarea(this,None))((rdo,tarea)=>
+     rdo.realizarTarea(tarea))
+     equipoFinal.tareaFallida.fold(RdoDeRealizarTarea(unaMision.recompensa(equipoFinal.equipo),None))(tarea=>
+       equipoFinal)
+  
+    
   }
 
   type criterioMejorMision = (Equipo, Equipo) => Boolean
   def elegirMision(criterio: criterioMejorMision, mision1: Mision, mision2: Mision): Mision = {
-    if(mejorMision(criterio, mision1, mision2)){
+    if(mejorMision(criterio)(mision1, mision2)){
       mision1
     }else{
       mision2
     }
   }
-
-  def mejorMision(criterio: criterioMejorMision, mision1: Mision, mision2: Mision): Boolean = {
-
-    var rdo1, rdo2 = this
-    try {
-      rdo1 = this.realizarMision(mision1)
-    } catch {
-      case e: TareaFallidaException => return false
-    }
-
-    try {
-      rdo2 = this.realizarMision(mision2)
-    } catch {
-      case e: TareaFallidaException => return true
-    }
-
-    return criterio(rdo1, rdo2)
-  }
-
-  /*def entrenar(misiones: List[Mision], criterio: criterioMejorMision): Equipo = {
-    misiones match {
-      case x :: xs  => this.realizarMision(misiones.fold(x)((mis1, mis2) => elegirMision(criterio, mis1, mis2))).entrenar(xs, criterio)
-      case x :: Nil => this.realizarMision(x)
-      case _        => this
-    }
-  }*/
-
-  //EN cada paso puede cambiar la mejor mision siguiente
-  def entrenar(misiones: List[Mision], criterio: criterioMejorMision): Equipo = {
-    misiones.sortWith((mision1: Mision, mision2: Mision) => mejorMision(criterio, mision1, mision2)).
-      foldLeft(this)((equipo: Equipo, mision: Mision) => equipo.realizarMision(mision))
-  }
-
-}  
   
+  def mejorMision(criterio: criterioMejorMision)(mision1: Mision, mision2: Mision): Boolean = {
+
+    var rdo1, rdo2 = RdoDeRealizarTarea(this,None)
+
+     rdo1.better(rdo2,criterio)
+  }
+
+
+  //Si la lista tiene mas de una mision. Obtiene la mejor, la hace
+  //y manda el equipo resultante a entrenar nuevamente (con las miisones que quedan)
+  //si la lista tiene una sola mision. la hace. 
+  //devuelve un resultado (cuando falla burbujea, manteniendo el mismo resultado con el equipo y la 
+  //mision en la que fallo)
+  def entrenar(misiones: List[Mision], criterio: criterioMejorMision): RdoDeRealizarTarea = {
+    misiones match{
+      case x::xs::nil=> {val mision=misiones.sortWith(mejorMision(criterio)).head
+        this.realizarMision(mision).equipo.entrenar(misiones.dropWhile { x => x==mision }, criterio)
+      
+      }
+      case x::nil=>this.realizarMision(x)
+      }
+    }
+  
+}
