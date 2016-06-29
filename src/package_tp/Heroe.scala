@@ -1,71 +1,54 @@
 package package_tp
 import collection.immutable.HashMap
 
-case class Heroe (val stats:Stats, val trabajo:Option[Trabajo], val inventario:HashMap[Slot.Value, Option[Item]]) {
+case class Heroe (val hp:Int, val fuerza:Int, val velocidad:Int, val inteligencia:Int, val trabajo:Option[Trabajo]=None, val inventario:Inventario=new Inventario) {
   
-  //val stats = new Stats(hp,fuerza,velocidad,inteligencia) 
-  
- // val inventario = new HashMap[Slot.Value, Option[Item]]
+  lazy val stats :scala.collection.immutable.HashMap[Stat.Value,Int]= HashMap((Stat.hp,hp),(Stat.fuerza,fuerza),(Stat.inteligencia,inteligencia),
+      (Stat.velocidad,velocidad))
 
+     //devolver un Option (Y)
+  def equipar(unItem:Item):Option[Heroe]= {
+      if(unItem.puedeEquipar(this)){
+        unItem match{
+    case casco:Casco=>Some(this.copy(inventario=inventario.copy( cabeza=Some(casco))))
+    case pecho:Pecho=>Some(this.copy(inventario=inventario.copy( torso=Some(pecho))))
+    case manoDoble:ManoDoble=>Some(this.copy(inventario=inventario.copy( manoIzq=Some(manoDoble),manoDer=None)))
+    case unaMano:UnaMano=>Some(equiparEnManoPro(unaMano))
+    case talisman:Talisman=>Some(this.copy(inventario=inventario.copy(talismanes=inventario.talismanes.+:(Some(talisman)))))
+        }
+      }
+      else{Some(this
+          )}
+  }
   
-  /*def modificarStat (funcion:(Int => Int), stat:Stat.Value): Heroe = {
+  def equiparEnManoPro(unItem:Item):Heroe={
+    val manoIzq=inventario.manoIzq
     
-    var statFinal = funcion(stats.getStat(stat))
-    
-    if (statFinal < 1) {
-      statFinal = 1
-    }    
-    
-    stats.stats.update(stat, statFinal)
-    return this  
-  }*/
-  
-
-  def intentarEquipar(unItem:Item):Heroe= {
-    if(unItem.puedeEquipar(this)){
-      return this.ocuparSlot(unItem)
+    manoIzq.get match{
+      case manoDoble:ManoDoble=>this.copy(inventario=inventario.copy(manoIzq=Some(unItem)))  
+      case otherwise=>{
+      val equipadoEnDer=this.copy(inventario=inventario.copy(manoDer=Some(unItem)))
+    val equipadoEnIzq=this.copy(inventario=inventario.copy(manoIzq=Some(unItem)))
+    if(equipadoEnDer.getMainStatValue>equipadoEnIzq.getMainStatValue){ equipadoEnDer}
+    else{equipadoEnIzq}}
     }
-    return this
-  }
-  
-  /*
-  def equipaEnElSlot(unSlot: Slot.Value, unItem : Item):Heroe ={
-    inventario.update(unSlot,Some(unItem))    
-    return this      
-  }
-  */
+    }
+ def trabajar(unTrabajo:Trabajo):Heroe= this.copy(trabajo=Some(unTrabajo))
+ 
   
   
   //Option.fold(valorSiNoHayNada)(valorSiTieneUnObjeto)
   def getStat(stat:Stat.Value):Int = {
-    
-    
-    var valorStat :Int = stats.getStat(stat) + trabajo.fold(0)((trabajo:Trabajo)=>trabajo.getStatModifier(stat))
-    var statFinal :Int = inventario.foldLeft(valorStat)((param1,param2)=>(param2._2.fold(valorStat)(_.getStat(this, stat, param1))))
-    
-    return statFinal.max(1)
-    
-  }
-  
-  def setStat(stat:Stat.Value, cantStat:Int) :Heroe ={
-    val statsCambiados = this.stats.setStat(stat,cantStat)
-    val heroeCambiado = this.copy(stats = statsCambiados)
-    heroeCambiado
-  }
+   val heroeConTrabajo=trabajo.fold(this)(trabajo=>trabajo.efectoSobreHeroe(this))
+   val equipado=inventario.aplicate(heroeConTrabajo) 
+    val statResultante=equipado.stats.get(stat).get
+   statResultante.max(1)
+ }
+ def getMainStatValue():Int={
+   
+   trabajo.fold(0)(trabajo=>this.getStat(trabajo.statPrincipal))
+   //usar un fold (Y)
+ }
  
-  private def ocuparSlot(item:Item):Heroe={
-    val slot = item.slot
-    val inventarioNuevo = inventario.updated(slot, Some(item))
-    val nuevoHeroe = this.copy(inventario=inventarioNuevo)
-    return nuevoHeroe
-  }
+} 
   
-  
-  
-  
-  
-  
-  
-  
-  
-}

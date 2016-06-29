@@ -1,6 +1,10 @@
 package package_tp
 
-class Tarea(unHeroe: Heroe,unEquipo:Equipo,val facilidad:(Heroe,Equipo=>Int),val efecto:(Heroe=>Heroe)) {
+class Tarea(val facilidad: (Equipo=>Heroe=>Int),val efecto:(Heroe=>Heroe)) {
   
   
 }
+
+// val facilidad: Equipo : Option[funcasd]
+
+// type funcasd= Heroe=>int;
