@@ -9,7 +9,7 @@ import scala.util.Success
 case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes: Set[Heroe] = Set()) {
 
   //mejorHeroeSegun ya no contempla heroes que dan error al aplicar el criterio
-  def mejorHeroeSegun(criterio: (Heroe => Int)): Option[Heroe] = {
+  def mejorHeroeSegun(criterio: Heroe => Int): Option[Heroe] = {
 
     val mejor = heroes.filter { heroe => Try(criterio(heroe)).isSuccess}.maxBy { heroe => 
       criterio(heroe)
@@ -18,7 +18,7 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
     else { Some(mejor) }
   }
 
-  def lider(): Option[Heroe] = mejorHeroeSegun((heroe: Heroe) => heroe.getMainStatValue())
+  def lider(): Option[Heroe] = mejorHeroeSegun((heroe: Heroe) => (heroe.getMainStatValue()))
 
   def expulsarMiembro(unHeroe: Heroe): Equipo = this.copy(heroes = heroes.-(unHeroe))
 
@@ -27,8 +27,10 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
   def reemplazarMiembro(unHeroe: Heroe, reemplazo: Heroe): Equipo = this.expulsarMiembro(unHeroe).agregarMiembro(reemplazo)
 
   def obtenerUnItem(unItem: Item): Equipo = {
+    
 
-    val seLoLleva = mejorHeroeSegun { heroe => heroe.equipar(unItem).get.getMainStatValue-heroe.getMainStatValue }
+
+    val seLoLleva = mejorHeroeSegun {(heroe:Heroe) => heroe.equipar(unItem).get.getMainStatValue-heroe.getMainStatValue }
 
     seLoLleva.fold(this.copy(pozoComun = pozoComun + unItem.precio))(heroe=>
       if((heroe.equipar(unItem).get.getMainStatValue-heroe.getMainStatValue)<0){
@@ -41,12 +43,18 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
     
   }
 
-  def realizarTarea(unaTarea: Tarea): ResultadoTarea = {
+  
+ def realizarTarea(unaTarea: Tarea): ResultadoTarea = {
     var facilidadDeEquipo = unaTarea.facilidad(this)
-    val mejor = mejorHeroeSegun((heroe: Heroe) => facilidadDeEquipo(heroe))
+    // si la facilidad tiene un None (No se puede calcular)=> tarea fallida
+    //Sino hace la logica. (El otro fold solo contempla el hecho de q la lista este vacia)
+    facilidadDeEquipo.fold[ResultadoTarea](TareaFallida(unaTarea,this))(facilidad=>{
+    val mejor = mejorHeroeSegun((heroe: Heroe) => facilidad(heroe))
     mejor.fold[ResultadoTarea](TareaFallida(unaTarea,this))(mejor=>
       TareaExitosa(unaTarea,this.reemplazarMiembro(mejor,unaTarea.efecto(mejor))))
-    
+    }
+    )
+     
   }
 
   def realizarMision(unaMision: Mision): ResultadoTarea = {
@@ -80,17 +88,18 @@ case class Equipo(val nombreDeEquipo: String, val pozoComun: Int = 0, val heroes
     rdo1.isBetterThan(criterio)(rdo2)
   }
 
-  def entrenar(misiones: List[Mision], criterio: criterioMejorMision): ResultadoTarea = {
+  def entrenar(misiones: scala.collection.mutable.ListBuffer[Mision], criterio: criterioMejorMision): ResultadoTarea = {
     val criterioMision = elegirMision(criterio)(_,_)
     var tareaUltimaMision:ResultadoTarea = SinTarea(this)
     do{
      tareaUltimaMision match{
        case TareaFallida(tarea,equipo) => return TareaFallida(tarea,equipo)
      }
-     val mejorMision = misiones.reduceLeft(criterioMision)
-     tareaUltimaMision = tareaUltimaMision.equipo.realizarMision(mejorMision)
+    val mejorMision = misiones.reduceLeft(criterioMision)
+    tareaUltimaMision = tareaUltimaMision.equipo.realizarMision(mejorMision)
+    misiones.-=(mejorMision)
     }while(!misiones.isEmpty)
     tareaUltimaMision
     }
-  
+
 }

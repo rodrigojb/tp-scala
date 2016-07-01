@@ -1,6 +1,6 @@
 package package_tp
 
-class Tarea(val facilidad: (Equipo=>Heroe=>Int),val efecto:(Heroe=>Heroe)) {
+class Tarea(val facilidad: (Equipo=>Option[Heroe=>Int]),val efecto:(Heroe=>Heroe)) {
   
   
 }

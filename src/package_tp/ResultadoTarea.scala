@@ -28,9 +28,15 @@ case class TareaFallida(val tarea:Tarea,val equipo: Equipo) extends ResultadoTar
 
 }
 
+
 case class SinTarea(val equipo: Equipo) extends ResultadoTarea{
   def map(f:(Equipo=>ResultadoTarea)) :ResultadoTarea = f(equipo)
-  def isBetterThan(criterio: CriterioMejorMision)(comparado :ResultadoTarea) = false
-
+  def isBetterThan(criterio: CriterioMejorMision)(comparado :ResultadoTarea) = {
+    comparado match{
+      case TareaExitosa(_, equipoAComparar) => criterio(equipo, equipoAComparar) 
+      case otro => true
+    }
+  }
+  
 }
 
